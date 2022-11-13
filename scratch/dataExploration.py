@@ -277,8 +277,6 @@ treeModel.plotFeatureImportance(12)
 # Consider the full dataset - what are the blindspots of the model?
 #   Consider Decision Tree only -> best performance on Test set
 
-xFull = np.concatenate((xTrainValid, xTest))
-yFull = np.concatenate((yTrainValid, yTest))
 shuffledBikeSalesData = pd.DataFrame(data = np.concatenate((xTest, yTest[:, np.newaxis]), axis = 1),
                                      columns = oneHotBikeSalesData.columns)
 

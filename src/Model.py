@@ -19,10 +19,10 @@ class Model():
         self.pipeline = pipeline
         self.modelName = modelName
         
-    def optimiseHyperparameters(self, xTrainValid, yTrainValid, param, cvObj):
+    def optimiseHyperparameters(self, xTrainValid, yTrainValid, param, cvObj, numIter = 100):
         self.crossValObject = cvObj
         randomSearch = BayesSearchCV(estimator = self.pipeline, search_spaces = param,
-                                      n_iter = 100, cv = cvObj, verbose = 5,
+                                      n_iter = numIter, cv = cvObj, verbose = 5,
                                       n_jobs = -1, scoring = 'f1')
         randomSearch.fit(xTrainValid, yTrainValid)
         self.bestMdl = randomSearch.best_estimator_
@@ -101,6 +101,18 @@ class Model():
             plt.barh(self.featureNames[sortedIdx][-topN:], featureWeightData[sortedIdx][-topN:])
             plt.xlabel(self.modelName + " Feature Importance")
         plt.subplots_adjust(left = 0.4)
+        
+    def getDemographics(self, shopData):
+        fullTestData = np.concatenate((shopData.xTest, shopData.yTest[:, np.newaxis]), axis = 1)
+        shuffledBikeSalesData = pd.DataFrame(data = fullTestData,
+                                             columns = shopData.processedFeatureNames)
+        # Close look at true positives. Plot Distributions.
+        truePositiveIdx =  np.logical_and(self.yTestHat == 1, shopData.yTest == 1)
+        self.knownDemographic = shuffledBikeSalesData.loc[truePositiveIdx]
+
+        # Close look at false negatives. Plot Distributions.
+        falseNegativeIdx = np.logical_and(self.yTestHat == 0, shopData.yTest == 1)
+        self.unknownDemographic = shuffledBikeSalesData.loc[falseNegativeIdx]
     
     def saveModel(self, fileName):
         pickle.dump(self, open(fileName, 'wb'))
