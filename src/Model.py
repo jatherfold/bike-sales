@@ -12,6 +12,7 @@ from sklearn.model_selection import cross_val_score
 from sklearn.metrics import confusion_matrix, f1_score, accuracy_score
 import matplotlib.pyplot as plt
 from sklearn.inspection import permutation_importance
+import pickle
 
 class Model():
     def __init__(self, pipeline, modelName):
@@ -100,3 +101,6 @@ class Model():
             plt.barh(self.featureNames[sortedIdx][-topN:], featureWeightData[sortedIdx][-topN:])
             plt.xlabel(self.modelName + " Feature Importance")
         plt.subplots_adjust(left = 0.4)
+    
+    def saveModel(self, fileName):
+        pickle.dump(self, open(fileName, 'wb'))

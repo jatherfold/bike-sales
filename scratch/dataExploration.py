@@ -238,24 +238,28 @@ treeModel.optimiseHyperparameters(xTrainValid, yTrainValid, treeParam, crossValO
 
 logisticModelL1.train(xTrainValid, yTrainValid, oneHotBikeSalesData.columns)
 logisticModelL1.test(xTest, yTest)
+logisticModelL1.saveModel('logisticMdlL1.pkl')
 logisticModelL1.printResults()
 plot_confusion_matrix(logisticModelL1.testConfusionMatrix, ['No', 'Yes'],
                       title = logisticModelL1.modelName, normalize=False)
 
 logisticModelL2.train(xTrainValid, yTrainValid, oneHotBikeSalesData.columns)
 logisticModelL2.test(xTest, yTest)
+logisticModelL2.saveModel('logisticMdlL2.pkl')
 logisticModelL2.printResults()
 plot_confusion_matrix(logisticModelL2.testConfusionMatrix, ['No', 'Yes'],
                       title = logisticModelL2.modelName, normalize=False)
 
 svcModel.train(xTrainValid, yTrainValid, oneHotBikeSalesData.columns)
 svcModel.test(xTest, yTest)
+svcModel.saveModel('svcMdl.pkl')
 svcModel.printResults()
 plot_confusion_matrix(svcModel.testConfusionMatrix, ['No', 'Yes'],
                       title = svcModel.modelName, normalize=False)
 
 treeModel.train(xTrainValid, yTrainValid, oneHotBikeSalesData.columns)
 treeModel.test(xTest, yTest)
+treeModel.saveModel('treeMdl.pkl')
 treeModel.printResults()
 plot_confusion_matrix(treeModel.testConfusionMatrix, ['No', 'Yes'],
                       title = treeModel.modelName, normalize=False)
@@ -275,15 +279,30 @@ treeModel.plotFeatureImportance(12)
 
 xFull = np.concatenate((xTrainValid, xTest))
 yFull = np.concatenate((yTrainValid, yTest))
-shuffledBikeSalesData = pd.DataFrame(data = np.concatenate((xFull, yFull[:, np.newaxis]), axis = 1),
+shuffledBikeSalesData = pd.DataFrame(data = np.concatenate((xTest, yTest[:, np.newaxis]), axis = 1),
                                      columns = oneHotBikeSalesData.columns)
 
-treeModel.train(xFull, yFull, oneHotBikeSalesData.columns)
-
 # Close look at true positives. Plot Distributions.
-truePositiveIdx =  np.logical_and(treeModel.yTrainValidHat == 1, yFull == 1)
+truePositiveIdx =  np.logical_and(treeModel.yTestHat == 1, yTest == 1)
 knownDemographic = shuffledBikeSalesData.loc[truePositiveIdx]
 
 # Close look at false negatives. Plot Distributions.
-falseNegativeIdx = np.logical_and(treeModel.yTrainValidHat == 0, yFull == 1)
+falseNegativeIdx = np.logical_and(treeModel.yTestHat == 0, yTest == 1)
 unknownDemographic = shuffledBikeSalesData.loc[falseNegativeIdx]
+
+# Plots
+importantFeatures = ['Age', 'Income', 'Married', 'Cars', 'Male']
+feature = 'Income'
+plt.figure()
+plt.bar(knownDemographic[feature].value_counts().sort_index().index.astype(str), knownDemographic[feature].value_counts().sort_index().values, label = 'Known Demographic', alpha = 0.5)
+plt.bar(unknownDemographic[feature].value_counts().sort_index().index.astype(str), unknownDemographic[feature].value_counts().sort_index().values, label = 'Unknown Demographic', alpha = 0.5)
+plt.title(feature)
+plt.xticks(rotation = 45)
+plt.legend()
+
+for feature in importantFeatures:
+    plt.figure()
+    plt.bar(knownDemographic[feature].value_counts().index, knownDemographic[feature].value_counts().values, label = 'Known Demographic', alpha = 0.5)
+    plt.bar(unknownDemographic[feature].value_counts().index, unknownDemographic[feature].value_counts().values, label = 'Unknown Demographic', alpha = 0.5)
+    plt.title(feature)
+    plt.legend()
