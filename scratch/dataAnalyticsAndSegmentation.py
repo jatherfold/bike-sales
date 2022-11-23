@@ -25,8 +25,9 @@ sandtonShopData.loadData()
 
 sandtonShopData.preprocessData(filterOn = None)
 
-#%%
 purchasedBikeIdx = sandtonShopData.processedData['Purchased Bike'] == 'Yes'
+
+#%%
 # Start by taking a look at customer segmentation by the most important features
 plt.figure()
 sandtonShopData.processedData[purchasedBikeIdx].groupby(['Age']).count()['Purchased Bike'].plot(kind='bar')
@@ -89,3 +90,11 @@ plt.title('Bikes Sold per Region, Compared to Commute Distance')
 #%%
 pd.crosstab(sandtonShopData.processedData['Region'][purchasedBikeIdx],sandtonShopData.processedData['Age'][purchasedBikeIdx]).transpose().plot.bar(rot = 15)
 plt.title('Bikes Sold per Region, Compared to Age')
+
+#%%
+pd.crosstab(sandtonShopData.processedData['Region'][purchasedBikeIdx],sandtonShopData.processedData['Income'][purchasedBikeIdx]).transpose().plot.bar(rot = 15)
+plt.title('Bikes Sold per Region, Compared to Income')
+
+#%%
+pd.crosstab(sandtonShopData.processedData['Region'][purchasedBikeIdx],sandtonShopData.processedData['Occupation'][purchasedBikeIdx]).transpose().plot.bar(rot = 15)
+plt.title('Bikes Sold per Region, Compared to Profession')

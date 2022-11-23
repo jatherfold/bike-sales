@@ -56,13 +56,14 @@ svcModel.optimiseHyperparameters(sandtonShopData.xTrainValid,
 svcModel.train(sandtonShopData.xTrainValid, sandtonShopData.yTrainValid,
                 sandtonShopData.processedFeatureNames)
 svcModel.test(sandtonShopData.xTest, sandtonShopData.yTest)
-svcModel.saveModel('l1LogisticMdlEurope.pkl')
+svcModel.saveModel('svcMdlEurope.pkl')
 svcModel.printResults()
 plt.figure()
 plot_confusion_matrix(svcModel.testConfusionMatrix, ['No', 'Yes'],
                       title = svcModel.modelName, normalize=True)
 
-svcModel.plotFeatureImportance(12)
+svcModel.plotFeatureImportance(12, xTrainValid=sandtonShopData.xTrainValid,
+                               yTrainValid=sandtonShopData.yTrainValid)
 
 
 #%% Find known and unknown demographics

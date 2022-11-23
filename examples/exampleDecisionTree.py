@@ -55,14 +55,14 @@ treeModel.optimiseHyperparameters(sandtonShopData.xTrainValid,
 
 #%% Train and Test Final Model
 
-# treeModel = pickle.load(open('exampleTreeMdl.pkl', 'rb'))
+treeModel = pickle.load(open('treeMdlEurope.pkl', 'rb'))
 treeModel.train(sandtonShopData.xTrainValid, sandtonShopData.yTrainValid,
                 sandtonShopData.processedFeatureNames)
 treeModel.test(sandtonShopData.xTest, sandtonShopData.yTest)
-treeModel.saveModel('treeMdlEurope.pkl')
+# treeModel.saveModel('treeMdlEurope.pkl')
 treeModel.printResults()
 plot_confusion_matrix(treeModel.testConfusionMatrix, ['No', 'Yes'],
-                      title = treeModel.modelName, normalize=False)
+                      title = treeModel.modelName, normalize=True)
 
 treeModel.plotFeatureImportance(12)
 plt.figure()
