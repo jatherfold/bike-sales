@@ -18,7 +18,7 @@ class Data():
         self.rawData = self.rawData.dropna(axis = 1, thresh = 900) # If more than 900 points are nan, drop the column
         self.rawData = self.rawData.dropna(axis = 0) # Drop all rows with nans. Data: 1000 rows -> 996 rows. Still acceptable.
 
-    def preprocessData(self):
+    def preprocessData(self, filterOn = None):
         self.processedData = self.rawData.copy()
         # ID is a unique identifier -> Not useful for modelling, drop it.
         self.processedData = self.processedData.drop('ID', 1)
@@ -37,9 +37,10 @@ class Data():
         for columnName in numericFeatureNames:
             self.processedData[columnName] = self.processedData[columnName].astype(float)
         
+        if filterOn is not None:
+            self.filterOn(filterOn)    
         self.oneHotData = self.processedData.copy()
-        categoricalColumns = ["Marital Status", "Gender", "Education", "Occupation",
-                              "Home Owner", "Commute Distance", "Region", "Purchased Bike"]
+        categoricalColumns = set(self.processedData.columns) - set(numericFeatureNames)
         for columnName in categoricalColumns:
             oneHot = pd.get_dummies(self.oneHotData[columnName])
             self.oneHotData = self.oneHotData.drop(columnName, axis = 1)
@@ -56,8 +57,18 @@ class Data():
                                                           'YesPurchased Bike':'Purchased Bike'})
         self.processedFeatureNames = self.oneHotData.columns
         
-    def trainTestSplit(self, testFrac):
-        self.xTrainValid, self.xTest, self.yTrainValid, self.yTest = train_test_split(
-            self.oneHotData[self.oneHotData.columns[:-1]].values,
-            self.oneHotData[self.oneHotData.columns[-1]].values,
-            test_size = int(testFrac*len(self.oneHotData)))
+    def trainTestSplit(self, dataType, testFrac):
+        if dataType == 'OneHot':
+            self.xTrainValid, self.xTest, self.yTrainValid, self.yTest = train_test_split(
+                self.oneHotData[self.oneHotData.columns[:-1]].values,
+                self.oneHotData[self.oneHotData.columns[-1]].values,
+                test_size = int(testFrac*len(self.oneHotData)))
+        elif dataType == 'Categorical':
+            self.xTrainValid, self.xTest, self.yTrainValid, self.yTest = train_test_split(
+                self.processedData[self.processedData.columns[:-1]].values,
+                self.processedData[self.processedData.columns[-1]].values,
+                test_size = int(testFrac*len(self.oneHotData)))
+    def filterOn(self, filterKey):
+        filterIdx = self.processedData[filterKey[0]] == filterKey[1]
+        self.processedData = self.processedData[filterIdx]
+        self.processedData = self.processedData.drop(filterKey[0], axis = 1)

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sun Nov 13 13:29:39 2022
+Created on Wed Nov 23 12:16:04 2022
 
 @author: john.atherfold
 """
@@ -9,10 +9,8 @@ Created on Sun Nov 13 13:29:39 2022
 import numpy as np
 from sklearn.model_selection import KFold
 from sklearn import preprocessing
-from sklearn.tree import DecisionTreeClassifier, plot_tree
+from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
-import os
-from skopt.space import Real, Categorical, Integer
 import sys
 import matplotlib.pyplot as plt
 
@@ -23,7 +21,6 @@ from src.Model import Model
 from src.Data import Data
 from helpers.DataModule import plot_confusion_matrix
 import pickle
-import pandas as pd
 
 #%% Create Data Object
 
@@ -31,7 +28,7 @@ sandtonShopData = Data('./data/Bike_Buyer_Data_edited.txt') #For example - may b
 
 sandtonShopData.loadData()
 
-sandtonShopData.preprocessData(filterOn = None)
+sandtonShopData.preprocessData(filterOn = ['Region', 'Europe'])
 
 #%% Split Data for ML Workflow
 
@@ -40,40 +37,34 @@ sandtonShopData.trainTestSplit('OneHot', 0.15)
 #%% Setup for and ML Workflow
 
 crossValObj = KFold(n_splits=20)
-treePipe = Pipeline([#('scaler', preprocessing.MinMaxScaler()),
-                     ('decisionTree', DecisionTreeClassifier())])
-treeParam = {
-    'decisionTree__criterion': Categorical(['gini', 'entropy', 'log_loss']),
-    'decisionTree__max_depth': np.arange(1,100),
-    'decisionTree__min_samples_split': np.arange(2,100),
-    'decisionTree__min_samples_leaf': np.arange(1,100)}
+logisticRegPipe = Pipeline([('scaler', preprocessing.MinMaxScaler()),
+                            ('logisticRegression',
+                             LogisticRegression(solver = 'liblinear'))])
+logisticParam = {'logisticRegression__C': np.logspace(-2, 2, 1000)}
+
     
-treeModel = Model(treePipe, 'Decision Tree')
-treeModel.optimiseHyperparameters(sandtonShopData.xTrainValid,
+logisticModel = Model(logisticRegPipe, 'Logistic Regression')
+logisticModel.optimiseHyperparameters(sandtonShopData.xTrainValid,
                                   sandtonShopData.yTrainValid,
-                                  treeParam, crossValObj)
+                                  logisticParam, crossValObj)
 
 #%% Train and Test Final Model
 
 # treeModel = pickle.load(open('exampleTreeMdl.pkl', 'rb'))
-treeModel.train(sandtonShopData.xTrainValid, sandtonShopData.yTrainValid,
+logisticModel.train(sandtonShopData.xTrainValid, sandtonShopData.yTrainValid,
                 sandtonShopData.processedFeatureNames)
-treeModel.test(sandtonShopData.xTest, sandtonShopData.yTest)
-treeModel.saveModel('treeMdlEurope.pkl')
-treeModel.printResults()
-plot_confusion_matrix(treeModel.testConfusionMatrix, ['No', 'Yes'],
-                      title = treeModel.modelName, normalize=False)
+logisticModel.test(sandtonShopData.xTest, sandtonShopData.yTest)
+logisticModel.saveModel('logisticMdlEurope.pkl')
+logisticModel.printResults()
+plot_confusion_matrix(logisticModel.testConfusionMatrix, ['No', 'Yes'],
+                      title = logisticModel.modelName, normalize=False)
 
-treeModel.plotFeatureImportance(12)
-plt.figure()
-plot_tree(treeModel.bestMdl.named_steps['decisionTree'],
-          feature_names = treeModel.featureNames,
-          class_names = ['True', 'False'], filled = True,
-          fontsize=9, max_depth = 4)
+logisticModel.plotFeatureImportance(12)
+
 
 #%% Find known and unknown demographics
 
-treeModel.getDemographics(sandtonShopData)
+logisticModel.getDemographics(sandtonShopData)
 
 #%% Answering the Question
 
@@ -121,21 +112,10 @@ plt.figure()
 sandtonShopData.processedData[purchasedBikeIdx].groupby(['Home Owner', 'Age']).count()['Purchased Bike'].plot(kind='bar', rot = 15)
 
 plt.figure() # This is a good one. Interesting to see the differences.
-sandtonShopData.processedData[purchasedBikeIdx].groupby(['Region', 'Income']).count()['Purchased Bike'].plot.bar()
-#%%
+sandtonShopData.processedData[purchasedBikeIdx].groupby(['Region', 'Income']).count()['Purchased Bike'].plot(kind='bar', rot = 15)
 
-pd.crosstab(sandtonShopData.processedData['Region'][purchasedBikeIdx],sandtonShopData.processedData['Cars'][purchasedBikeIdx]).transpose().plot.bar()
-plt.title('Bikes Sold per Region, Compared to Cars Owned')
+sandtonShopData.processedData[purchasedBikeIdx].groupby(['Region', 'Cars']).count()['Purchased Bike'].plot(kind='bar', rot = 15)
 
-#%%
-
-pd.crosstab(sandtonShopData.processedData['Region'][purchasedBikeIdx],sandtonShopData.processedData['Children'][purchasedBikeIdx]).transpose().plot.bar()
-plt.title('Bikes Sold per Region, Compared to Cars Owned')
-
-#%%
-
-pd.crosstab(sandtonShopData.processedData['Region'][purchasedBikeIdx],sandtonShopData.processedData['Cars'][purchasedBikeIdx]).transpose().plot.bar()
-plt.title('Bikes Sold per Region, Compared to Cars Owned')
 sandtonShopData.processedData[purchasedBikeIdx].groupby(['Region', 'Commute Distance']).count()['Purchased Bike'].plot(kind='bar', rot = 15)
 
 sandtonShopData.processedData[purchasedBikeIdx].groupby(['Region', 'Age']).count()['Purchased Bike'].plot(kind='bar', rot = 15)

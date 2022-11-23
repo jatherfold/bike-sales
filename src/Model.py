@@ -19,7 +19,7 @@ class Model():
         self.pipeline = pipeline
         self.modelName = modelName
         
-    def optimiseHyperparameters(self, xTrainValid, yTrainValid, param, cvObj, numIter = 100):
+    def optimiseHyperparameters(self, xTrainValid, yTrainValid, param, cvObj, numIter = 200):
         self.crossValObject = cvObj
         randomSearch = BayesSearchCV(estimator = self.pipeline, search_spaces = param,
                                       n_iter = numIter, cv = cvObj, verbose = 5,
@@ -95,7 +95,7 @@ class Model():
             plt.barh(self.featureNames[sortedIdx][-topN:], featureWeightData[sortedIdx][-topN:])
             plt.xlabel(self.modelName + " Feature Importance")
         elif 'Decision Tree' in self.modelName:
-            featureWeightData = self.bestMdl[1].feature_importances_
+            featureWeightData = self.bestMdl.named_steps['decisionTree'].feature_importances_
             sortedIdx = abs(featureWeightData).argsort()
             plt.figure()
             plt.barh(self.featureNames[sortedIdx][-topN:], featureWeightData[sortedIdx][-topN:])

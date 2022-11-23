@@ -19,7 +19,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
 import random
 from sklearn.svm import SVC
-from sklearn.tree import DecisionTreeClassifier, plot_tree
+from sklearn.tree import DecisionTreeClassifier, plot_tree, export_text
 from sklearn.pipeline import Pipeline
 import os
 from skopt.space import Real, Categorical, Integer
@@ -27,9 +27,9 @@ from sklearn.model_selection import cross_val_score
 from helpers.DataModule import plot_confusion_matrix, undummify
 
 # Set-up Working Directory
-abspath = os.path.abspath("dataExploration.py")
-dname = os.path.dirname(abspath)
-os.chdir(dname + "\\..")
+# abspath = os.path.abspath("dataExploration.py")
+# dname = os.path.dirname(abspath)
+# os.chdir(dname + "\\..")
 
 from src.Model import Model
 
@@ -83,7 +83,7 @@ for columnName in numericFeatureNames:
 # Repeat similar plot as above, but colour by response -> See if there are any predictors that perfectly separate the classes
 for columnName in bikeSaleData.columns[:-1]:
     bikeSaleData2 = bikeSaleData.groupby([columnName,"Purchased Bike"])[columnName].count().unstack('Purchased Bike').fillna(0)
-    bikeSaleData2[['No','Yes']].plot(kind='bar', stacked=True, title = columnName, rot=90)
+    bikeSaleData2[['No','Yes']].plot(kind='bar', stacked=False, title = columnName, rot=90)
 
 # There are no trivial solutions that perfectly separate the response -> simpler linear models are unlikely to be very successful
 
