@@ -40,7 +40,9 @@ class Data():
         if filterOn is not None:
             self.filterOn(filterOn)    
         self.oneHotData = self.processedData.copy()
-        categoricalColumns = set(self.processedData.columns) - set(numericFeatureNames)
+        categoricalColumns = list(set(self.processedData.columns) - set(numericFeatureNames))
+        categoricalColumns.remove('Purchased Bike')
+        categoricalColumns.append('Purchased Bike')
         for columnName in categoricalColumns:
             oneHot = pd.get_dummies(self.oneHotData[columnName])
             self.oneHotData = self.oneHotData.drop(columnName, axis = 1)

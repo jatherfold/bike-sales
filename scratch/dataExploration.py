@@ -22,14 +22,13 @@ from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier, plot_tree, export_text
 from sklearn.pipeline import Pipeline
 import os
+import sys
 from skopt.space import Real, Categorical, Integer
 from sklearn.model_selection import cross_val_score
 from helpers.DataModule import plot_confusion_matrix, undummify
 
-# Set-up Working Directory
-# abspath = os.path.abspath("dataExploration.py")
-# dname = os.path.dirname(abspath)
-# os.chdir(dname + "\\..")
+# adding src to the system path
+sys.path.insert(0, './src')
 
 from src.Model import Model
 
